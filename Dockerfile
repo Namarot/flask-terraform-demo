@@ -20,7 +20,7 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR $APP_HOME
 
 # Install Poetry
-COPY ./titanic_app/pyproject.toml ./titanic_app/poetry.lock ./
+COPY ./pyproject.toml ./poetry.lock ./
 RUN python -m venv ${VENV_PATH} \
     && . /opt/venv/bin/activate \
     && pip install --upgrade pip \
