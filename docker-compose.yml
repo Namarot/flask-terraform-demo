@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_USER=youruser
+      - POSTGRES_DB=yourdb
+      - TABLE_NAME=people
+    volumes:
+      - ./titanic_app.csv:/docker-entrypoint-initdb.d/titanic_app.csv
+      - ./titanic_app.sql:/docker-entrypoint-initdb.d/titanic_app.sql
+      - dbdata:/var/lib/postgresql/data
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://youruser:yourpassword@db:5432/yourdb
+
+volumes:
+  dbdata:

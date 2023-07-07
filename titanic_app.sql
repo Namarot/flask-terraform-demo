@@ -12,3 +12,8 @@ CREATE TABLE people (
   "parentsOrChildrenAboard" INT NOT NULL,
   fare REAL NOT NULL
 );
+
+COPY people(survived,"passengerClass",name,sex,age,"siblingsOrSpousesAboard","parentsOrChildrenAboard",fare)
+FROM '/docker-entrypoint-initdb.d/titanic_app.csv'
+DELIMITER ','
+CSV HEADER;
