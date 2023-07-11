@@ -4,7 +4,7 @@ from models import db
 from views.people import people_api as people
 import os
 
-def create_app(env_name) -> Flask:
+def create_app() -> Flask:
     """
     Initializes the application registers
 
@@ -14,7 +14,7 @@ def create_app(env_name) -> Flask:
     Returns:
         The initialized app instance
     """
-    # env_name = os.getenv('FLASK_ENV', default='development')
+    env_name = os.getenv('FLASK_ENV', 'development')
 
     app = Flask(__name__)
     app.config.from_object(app_config[env_name])
@@ -40,5 +40,5 @@ def create_app(env_name) -> Flask:
 
 if __name__ == "__main__":
     # Run the Flask app
-    app = create_app("development")
+    app = create_app()
     app.run()

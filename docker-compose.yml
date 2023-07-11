@@ -23,6 +23,7 @@ services:
       - db
     environment:
       - DATABASE_URL=postgresql://youruser:yourpassword@db:5432/yourdb
+      - FLASK_ENV=development
 
 volumes:
   dbdata:

@@ -48,4 +48,4 @@ USER $APP_USER
 EXPOSE 5000/tcp
 
 # Set the entrypoint command
-CMD [ "poetry", "run", "gunicorn", "-w", "2", "-b", ":5000", "app:create_app('production')" ]
+CMD [ "poetry", "run", "gunicorn", "-w", "2", "-b", ":5000", "app:create_app()" ]

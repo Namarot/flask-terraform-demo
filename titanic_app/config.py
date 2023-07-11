@@ -2,7 +2,7 @@
 Module containing environment configurations
 """
 import os
-
+import boto3
 
 class Development:
     """
@@ -10,7 +10,6 @@ class Development:
     """
     DEBUG = True
     TESTING = False
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
 
 
@@ -20,8 +19,7 @@ class Production:
     """
     DEBUG = False
     TESTING = False
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = ssm.get_parameter(Name='DATABASE_URL', WithDecryption=True)['Parameter']['Value']
 
 
 app_config = {
