@@ -17,7 +17,10 @@ def create_app() -> Flask:
     env_name = os.getenv('FLASK_ENV', 'development')
 
     app = Flask(__name__)
-    app.config.from_object(app_config[env_name])
+    config_class = app_config[env_name]
+    app.config.from_object(config_class)
+    config_class.init_app(app)
+
     db.init_app(app)
 
     app.register_blueprint(people, url_prefix="/")
@@ -35,7 +38,6 @@ def create_app() -> Flask:
         """
 
     return app
-
 
 
 if __name__ == "__main__":
