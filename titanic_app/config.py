@@ -19,17 +19,21 @@ class Development(Config):
     """
     DEBUG = True
 
+class Test(Config):
+    """
+    Test environment configuration
+    """
+    TESTING = True
+
 
 class Production(Config):
     """
     Production environment configuration
     """
-    @classmethod
-    def init_app(cls, app):
-        pass
-
+    pass
 
 app_config = {
     'development': Development,
+    'test': Test,
     'production': Production,
 }

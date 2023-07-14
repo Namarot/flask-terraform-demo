@@ -3,7 +3,6 @@ from config import app_config
 from models import db
 from views.people import people_api as people
 import os
-import boto3
 
 def create_app() -> Flask:
     """
@@ -20,14 +19,6 @@ def create_app() -> Flask:
     app = Flask(__name__)
     config_class = app_config[env_name]
     app.config.from_object(config_class)
-
-    if env_name == 'production':
-        # Retrieve DATABASE_URL from SSM Parameter Store
-        session = boto3.Session(region_name='eu-central-1')
-        ssm = session.client('ssm')
-        app.config['SQLALCHEMY_DATABASE_URI'] = ssm.get_parameter(
-            Name='DATABASE_URL', WithDecryption=True
-        )['Parameter']['Value']
     
     config_class.init_app(app)
 
