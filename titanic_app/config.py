@@ -28,7 +28,8 @@ class Production(Config):
     """
     @classmethod
     def init_app(cls, app):
-        ssm = boto3.client('ssm', region_name='eu-central-1')
+        session = boto3.Session(region_name='eu-central-1')
+        ssm = session.client('ssm')
         cls.SQLALCHEMY_DATABASE_URI = ssm.get_parameter(Name='DATABASE_URL', WithDecryption=True)['Parameter']['Value']
 
 
