@@ -8,19 +8,24 @@ variable "vpc_cidr" {
   default     = "10.2.0.0/16"
 }
 
-variable "public_subnet_cidr" {
+variable "public_subnet1_cidr" {
   description = "CIDR block for the public subnet"
   default     = "10.2.1.0/24"
 }
 
+variable "public_subnet2_cidr" {
+  description = "CIDR block for the public subnet"
+  default     = "10.2.2.0/24"
+}
+
 variable "private_subnet1_cidr" {
   description = "CIDR block for the first private subnet"
-  default     = "10.2.2.0/24"
+  default     = "10.2.11.0/24"
 }
 
 variable "private_subnet2_cidr" {
   description = "CIDR block for the second private subnet"
-  default     = "10.2.3.0/24"
+  default     = "10.2.12.0/24"
 }
 
 variable "aws_account_id" {

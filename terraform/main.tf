@@ -6,7 +6,7 @@ module "vpc" {
   cidr = var.vpc_cidr
 
   azs             = ["eu-central-1a", "eu-central-1b"]
-  public_subnets  = [var.public_subnet_cidr]
+  public_subnets  = [var.public_subnet1_cidr, var.public_subnet2_cidr]
   private_subnets = [var.private_subnet1_cidr, var.private_subnet2_cidr]
 
   tags = {
@@ -24,7 +24,7 @@ resource "aws_security_group" "task_rds_sg" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [var.public_subnet_cidr]
+    cidr_blocks = [var.public_subnet1_cidr, var.public_subnet2_cidr]
   }
 
   egress {
@@ -115,6 +115,72 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_AmazonECSTaskExe
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+resource "aws_security_group" "task_alb_sg" {
+  name        = "task-alb-sg"
+  description = "Allow inbound traffic for ALB"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "Allow all HTTP traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "task-alb-sg"
+  }
+}
+
+resource "aws_lb" "task_app_alb" {
+  name               = "task-app-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.task_alb_sg.id]
+  subnets            = module.vpc.public_subnets
+
+  tags = {
+    Name = "task-app-alb"
+  }
+}
+
+resource "aws_lb_target_group" "task_app_alb_target_group" {
+  name     = "task-app-target-group"
+  port     = 5000
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+  target_type = "ip"
+  
+  health_check {
+    enabled             = true
+    interval            = 30
+    path                = "/"
+    protocol            = "HTTP"
+    timeout             = 3
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+}
+
+resource "aws_lb_listener" "task_app_alb_listener" {
+  load_balancer_arn = aws_lb.task_app_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.task_app_alb_target_group.arn
+  }
+}
+
 resource "aws_ecs_cluster" "task_ecs_cluster" {
   name = "task-ecs-cluster"
 }
@@ -125,11 +191,11 @@ resource "aws_security_group" "task_ecs_sg" {
   vpc_id      = module.vpc.vpc_id
 
   ingress {
-    description = "Flask app access from everywhere"
-    from_port   = 5000
-    to_port     = 5000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description      = "Flask app access from ALB"
+    from_port        = 5000
+    to_port          = 5000
+    protocol         = "tcp"
+    security_groups  = [aws_security_group.task_alb_sg.id]
   }
 
   egress {
@@ -198,9 +264,15 @@ resource "aws_ecs_service" "app_service" {
   launch_type     = "FARGATE"
   desired_count   = 1
 
+  load_balancer {
+    target_group_arn = aws_lb_target_group.task_app_alb_target_group.arn
+    container_name   = "app"
+    container_port   = 5000
+  }
+
   network_configuration {
     assign_public_ip = true
-    subnets          = [module.vpc.public_subnets[0]]
+    subnets          = module.vpc.public_subnets
     security_groups  = [aws_security_group.task_ecs_sg.id]
   }
 
@@ -211,6 +283,8 @@ resource "aws_ecs_service" "app_service" {
   }
 
   depends_on = [
-    aws_db_instance.task_rds
+    aws_db_instance.task_rds,
+    aws_lb_listener.task_app_alb_listener,
   ]
 }
+
