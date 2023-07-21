@@ -5,7 +5,7 @@ module "vpc" {
   name = "task-vpc"
   cidr = var.vpc_cidr
 
-  azs             = ["eu-central-1a", "eu-central-1b"]
+  azs             = ["eu-central-1a", "eu-central-1b"] # TODO: variable
   public_subnets  = [var.public_subnet_cidr]
   private_subnets = [var.private_subnet1_cidr, var.private_subnet2_cidr]
 
@@ -124,6 +124,7 @@ resource "aws_security_group" "task_ecs_sg" {
   description = "Allow inbound traffic for ECS tasks"
   vpc_id      = module.vpc.vpc_id
 
+  # TODO: Load balancer trafik almalı
   ingress {
     description = "Flask app access from everywhere"
     from_port   = 5000

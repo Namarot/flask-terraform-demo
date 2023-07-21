@@ -27,6 +27,8 @@ RUN python -m venv ${VENV_PATH} \
     && pip install poetry==${POETRY_VERSION} \
     && poetry install --only main --no-ansi
 
+
+# TODO: from base????
 # Final image for running the application
 FROM base 
 
